@@ -1,0 +1,92 @@
+# lockApp (starter blueprint)
+
+This repo now contains a **complete Android Studio project** for Android 10–14 that:
+
+- **Locks selected apps** using an **AccessibilityService** (typical consumer approach).
+- Adds **location-based rules** (geofence enter/exit/dwell).
+- Uses **tiny on-device ML** to estimate “child-using-now” and “agitation/misbehavior-like” patterns.
+- Supports **parent labeling** to personalize the model.
+
+> Important: Accessibility-based app locking can be bypassed (user disables Accessibility). For “hard lock,” you’d need **Device Owner** provisioning, which is a different setup.
+
+## What you will build (MVP behavior)
+
+- Parent chooses apps to restrict (block list) and defines place rules:
+  - **Home**: allow games 30 min/day
+  - **School**: block games/social
+  - **Unknown**: block selected apps
+- App runs a lightweight monitor:
+  - Tracks foreground app events (from Accessibility window changes)
+  - Tracks screen on/off bursts
+  - Tracks “rapid switching” patterns
+- ML returns a score:
+  - `childScore` (0..1): child-likely session
+  - `agitationScore` (0..1): frantic/irritational pattern likely
+- If `(policy says blocked here/time)` AND `(childScore high OR agitationScore high)` then show a lock screen over the target app.
+
+## “Free ML logic” (no ML libraries, tiny memory)
+
+Use **online Logistic Regression** implemented in Kotlin:
+
+- **Model size**: O(N) weights for N features (e.g. 32–80 features) -> typically **< 5KB–30KB**.
+- **Training**: parent labels time windows (“Child” / “Not child”) in-app. Each label triggers a few SGD updates.
+- **Privacy**: features are **counts/ratios** (metadata), not content.
+
+Files in this repo under `starter/` include a minimal implementation:
+- `starter/TinyLogReg.kt`: inference + SGD update
+- `starter/SessionFeatures.kt`: feature vector definition + normalization ideas
+
+## Location-based lock (geofence)
+
+Use **GeofencingClient** (Google Play services location) to get efficient ENTER/EXIT/DWELL events without constant GPS polling.
+
+Rules typically combine:
+- **Place** (geofence id)
+- **Time** (school hours / bedtime)
+- **Risk score** (ML + heuristics)
+
+## App name
+
+Use:
+
+- **App name**: `AIkiddylock`
+
+## Recommended package name (use this if you don’t know)
+
+Use:
+
+- **Package name**: `com.aikiddylock.parentcontrol`
+
+This is just an identifier. You can change it later in Android Studio refactor tools.
+
+## Build the `.apk`
+
+1. Open **Android Studio** → **Open** → select the `lockApp` folder.
+2. Let Gradle sync finish.
+3. Build:
+   - **Build → Build Bundle(s)/APK(s) → Build APK(s)** (debug APK)
+
+### Note about Gradle wrapper JAR
+
+This project includes `gradlew` scripts and `gradle/wrapper/gradle-wrapper.properties`, but **your environment may block downloading** `gradle/wrapper/gradle-wrapper.jar`.
+
+If Android Studio shows an error that `gradle-wrapper.jar` is missing, the quickest fix is:
+- Create any new Android Studio project once (it generates a wrapper), then copy that file:
+  - from `<other project>/gradle/wrapper/gradle-wrapper.jar`
+  - to `AIkiddylock/gradle/wrapper/gradle-wrapper.jar`
+
+After that, sync/build will work normally.
+
+## Next questions (so I can tailor the exact rules + UI)
+
+- What places do you need: **Home / School / Tuition** only, or “auto-detected frequent locations” too?
+- Do you want a simple lock outcome:
+  - **cool-down** (5–15 min)
+  - or **earning back time** (tasks / timer)
+- Should the app lock be active always, or only in **child mode**?
+
+---
+
+See `starter/` for copy/paste code templates.
+
+
