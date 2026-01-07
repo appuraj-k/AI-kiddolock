@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">AIkiddylock</string>
+    <string name="main_title">AIkiddylock</string>
+    <string name="btn_accessibility">Enable Accessibility Service</string>
+    <string name="btn_usage_access">Enable Usage Access (optional)</string>
+    <string name="btn_pick_apps">Pick Apps to Lock</string>
+    <string name="btn_places">Set Places (Home/School)</string>
+    <string name="btn_label">Label & Train (ML)</string>
+    <string name="btn_status">Refresh Status</string>
+    <string name="status">Status</string>
+    <string name="lock_title">App Locked</string>
+    <string name="unlock">Unlock</string>
+    <string name="parent_pin">Parent PIN</string>
+</resources>
+
+
